@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Локална база с доктори</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffe6f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px #d63384;
+            max-width: 900px;
+            margin: 40px auto;
+            text-align: center;
+            color: #333;
+        }
+
+        h2 {
+            color: #d63384;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 60%;
+            margin: 20px auto;
+            border-radius: 8px;
+            border: 1px solid #d63384;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #d63384;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8d7e4;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fce9f1;
+        }
+
+        .logout, .delete-btn {
+            background-color: #d63384;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .logout:hover, .delete-btn:hover {
+            background-color: #bf2a72;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Локални доктори</h2>
+
+    <input type="text" id="search" placeholder="Търси по специализация..." oninput="filterDoctors()">
+
+    <table>
+        <thead>
+        <tr>
+            <th>Име</th>
+            <th>Email</th>
+            <th>Специализация</th>
+            <th>Действие</th>
+        </tr>
+        </thead>
+        <tbody id="doctor-table-body">
+        </tbody>
+    </table>
+
+    <button class="logout" onclick="logout()">Изход</button>
+</div>
+
+<script>
+    let allDoctors = [];
+
+    function loadDoctors() {
+        allDoctors = JSON.parse(localStorage.getItem("doctors") || "[]");
+        displayDoctors(allDoctors);
+    }
+
+    function displayDoctors(doctors) {
+        const tbody = document.getElementById("doctor-table-body");
+        tbody.innerHTML = "";
+
+        if (doctors.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4">Няма регистрирани доктори.</td></tr>`;
+            return;
+        }
+
+        doctors.forEach((doc, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${doc.fullName}</td>
+                <td>${doc.email}</td>
+                <td>${doc.specialty}</td>
+                <td><button class="delete-btn" onclick="deleteDoctor(${index})">Изтрий</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function filterDoctors() {
+        const search = document.getElementById("search").value.toLowerCase();
+        const filtered = allDoctors.filter(doc => doc.specialty.toLowerCase().includes(search));
+        displayDoctors(filtered);
+    }
+
+    function deleteDoctor(index) {
+        if (confirm("Сигурни ли сте, че искате да изтриете този доктор?")) {
+            allDoctors.splice(index, 1);
+            localStorage.setItem("doctors", JSON.stringify(allDoctors));
+            displayDoctors(allDoctors);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem("loggedDoctor");
+        window.location.href = "login.html";
+    }
+
+    loadDoctors();
+</script>
+</body>
+</html>

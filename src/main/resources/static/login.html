@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход / Регистрация</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffe6f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px #d63384;
+            width: 350px;
+            text-align: center;
+            color: #333;
+        }
+
+        h2 {
+            color: #d63384;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d63384;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #d63384;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #bf2a72;
+        }
+
+        .toggle-link {
+            color: #d63384;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 15px;
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 id="form-title">Вход</h2>
+
+    <!-- Форма за вход -->
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="login-email">Имейл</label>
+            <input type="email" id="login-email" required>
+        </div>
+        <div class="form-group">
+            <label for="login-password">Парола</label>
+            <input type="password" id="login-password" required>
+        </div>
+        <button type="submit">Влез</button>
+    </form>
+
+    <!-- Форма за регистрация -->
+    <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+        <div class="form-group">
+            <label for="register-email">Имейл</label>
+            <input type="email" id="register-email" required>
+        </div>
+        <div class="form-group">
+            <label for="register-firstname">Име</label>
+            <input type="text" id="register-firstname" required>
+        </div>
+        <div class="form-group">
+            <label for="register-lastname">Фамилия</label>
+            <input type="text" id="register-lastname" required>
+        </div>
+        <div class="form-group">
+            <label for="register-specialization">Специализация</label>
+            <input type="text" id="register-specialization" required>
+        </div>
+        <div class="form-group">
+            <label for="register-password">Парола</label>
+            <input type="password" id="register-password" required>
+        </div>
+        <div class="form-group">
+            <label for="register-confirm-password">Потвърди паролата</label>
+            <input type="password" id="register-confirm-password" required>
+        </div>
+        <button type="submit">Регистрация</button>
+    </form>
+
+    <span class="toggle-link" onclick="toggleForm()">Нямаш акаунт? Регистрирай се</span>
+</div>
+
+<script>
+    let isRegistering = false;
+
+    function toggleForm() {
+        const loginForm = document.getElementById("loginForm");
+        const registerForm = document.getElementById("register-form");
+        const toggleLink = document.querySelector(".toggle-link");
+        const formTitle = document.getElementById("form-title");
+
+        isRegistering = !isRegistering;
+
+        if (isRegistering) {
+            loginForm.classList.add("hidden");
+            registerForm.classList.remove("hidden");
+            toggleLink.textContent = "Имаш акаунт? Влез";
+            formTitle.textContent = "Регистрация";
+        } else {
+            loginForm.classList.remove("hidden");
+            registerForm.classList.add("hidden");
+            toggleLink.textContent = "Нямаш акаунт? Регистрирай се";
+            formTitle.textContent = "Вход";
+        }
+    }
+
+    // ЛОГИН
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
+
+
+        if (email === "admin@123" && password === "Mariam@2002") {
+            localStorage.setItem("adminLoggedIn", "true");
+            window.location.href = "MyLocalDB.html";
+            return;
+        }
+
+
+        const doctors = JSON.parse(localStorage.getItem("doctors") || "[]");
+        const matched = doctors.find(doc => doc.email === email && doc.password === password);
+
+        if (!matched) {
+            alert("Грешно потребителско име или парола.");
+            return;
+        }
+
+        localStorage.setItem("loggedDoctor", JSON.stringify(matched));
+        window.location.href = "index.html";
+    });
+
+    // РЕГИСТРАЦИЯ
+    async function handleRegister(event) {
+        event.preventDefault();
+
+        const firstname = document.getElementById("register-firstname").value.trim();
+        const lastname = document.getElementById("register-lastname").value.trim();
+        const fullName = firstname + " " + lastname;
+        const email = document.getElementById("register-email").value.trim();
+        const specialty = document.getElementById("register-specialization").value.trim();
+        const password = document.getElementById("register-password").value;
+        const confirmPassword = document.getElementById("register-confirm-password").value;
+
+        if (password !== confirmPassword) {
+            alert("Паролите не съвпадат!");
+            return;
+        }
+
+        const doctors = JSON.parse(localStorage.getItem("doctors") || "[]");
+
+        if (doctors.some(d => d.email === email)) {
+            alert("Доктор с този имейл вече съществува!");
+            return;
+        }
+
+        const newDoctor = { fullName, email, specialty, password };
+        doctors.push(newDoctor);
+        localStorage.setItem("doctors", JSON.stringify(doctors));
+        alert("Регистрацията е успешна. Моля, влезте в профила си.");
+        toggleForm();
+    }
+</script>
+</body>
+</html>
+
